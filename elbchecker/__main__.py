@@ -1,5 +1,5 @@
 import sys
-from .check import check_elb
+from .runner import check_elb
 from .connection import get_session, get_client
 import optparse
 
