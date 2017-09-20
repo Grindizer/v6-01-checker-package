@@ -23,5 +23,5 @@ Project to illustrate packaging capability for python project.
 Usage
 -----
 
-$ git tag -a v.v.v                  # << use this tag in finding the package version.
-$ python setup.py sdist/bdist       # << generate source/binary package.
+$ git tag -a <TAG>                            # << use this tag in finding the package version.
+$ python setup.py [ sdist | bdist | ... ]     # << generate source/binary package.
