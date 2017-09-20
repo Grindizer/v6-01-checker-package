@@ -1,6 +1,6 @@
 import sys
 from .runner import check_elb
-from .connection import get_session, get_client
+from .connection import get_session
 import optparse
 
 
@@ -16,9 +16,11 @@ def main(args=sys.argv):
     opts, args = parser.parse_args(args)
     for region in opts.regions:
         session = get_session({}, region)
-        client = get_client('elb', session)
-        for check_name, name, status in check_elb(client):
-            print('{} :: {} :: {} -> {}'.format(region, name, check_name, status))
+        print(f'{"region":10}{"elb":30}{"check":20}{"status":6}')
+        print('-' * 66)
+        for check_name, elb_name, status in check_elb(session):
+            print(f'{region:10}{elb_name:30}{check_name:20}{status:6}')
+        print('-' * 66)
 
 
 if __name__ == '__main__':

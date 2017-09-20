@@ -1,4 +1,7 @@
-from pkg_resources import iter_entry_points
+import pkgutil
+import importlib
+import inspect
+import elbchecker.checks
 
 
 def list_load_balancer(client):
@@ -10,26 +13,23 @@ def list_load_balancer(client):
 
 
 def list_elb_checks():
-    for entry in iter_entry_points('elbchecker.checks'):
-        try:
-            check = entry.resolve()
-        except Exception as error:
-            # error loading check entrypoint !
-            # for now just ignore the entrypoint.
-            pass
-        else:
-            yield entry.name, check
+    for finder, mod_name, ispkg in pkgutil.iter_modules(elbchecker.checks.__path__):
+        check_module = importlib.import_module(f'elbchecker.checks.{mod_name}')
+        for name, func in inspect.getmembers(check_module, inspect.isfunction):
+            if name.startswith('check_'):
+                yield f'{mod_name}.{name}', func
 
 
-def check_elb(client):
+def check_elb(session):
     """
     Perform all elb checks on all elbs for a given region.
-    :param client: boto3 elb client.
+    :param session: boto3 session.
     :return: generator that yield the results as a tuple (<name of the check>, <elb name>, <check result>)
     """
+    client = session.client('elb')
     for elb in list_load_balancer(client):
         for check_name, check in list_elb_checks():
-            name, status = check(client, elb)
+            name, status = check(session, elb)
             yield (check_name, name, status)
 
 
